@@ -105,14 +105,14 @@ func verifyMatchRule(ruleData map[string]string,
 		ruleData["pattern"] = path.Clean(ruleData["pattern"])
 	}
 	for k := range srcArtifacts {
-		if path.Clean(k) != k {
-			srcArtifacts[path.Clean(k)] = srcArtifacts[k]
+		if filepath.ToSlash(path.Clean(k)) != k {
+			srcArtifacts[filepath.ToSlash(path.Clean(k))] = srcArtifacts[k]
 			delete(srcArtifacts, k)
 		}
 	}
 	for k := range dstArtifacts {
-		if path.Clean(k) != k {
-			dstArtifacts[path.Clean(k)] = dstArtifacts[k]
+		if filepath.ToSlash(path.Clean(k)) != k {
+			dstArtifacts[filepath.ToSlash(path.Clean(k))] = dstArtifacts[k]
 			delete(dstArtifacts, k)
 		}
 	}

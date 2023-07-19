@@ -696,6 +696,45 @@ func TestVerifyMatchRule(t *testing.T) {
 	}
 }
 
+func TestVerifyMatchRuleWindows(t *testing.T) {
+	if !testOSisWindows() {
+		t.Skip("Skipping Windows test on non-Windows OS")
+	}
+
+	var testCases = []struct {
+		name        string
+		rule        map[string]string
+		srcArtifact map[string]interface{}
+		item        map[string]Metadata
+		expectSet   Set
+	}{
+		{
+			name:        "Match material foo.d\\foo.py with foo.py",
+			rule:        map[string]string{"pattern": "*", "dstName": "foo", "dstType": "materials", "srcPrefix": "foo.d"},
+			srcArtifact: map[string]interface{}{"foo.d\\foo.py": map[string]interface{}{"sha265": "abc"}},
+			item:        map[string]Metadata{"foo": &Metablock{Signed: Link{Name: "foo", Materials: map[string]interface{}{"foo.py": map[string]interface{}{"sha265": "abc"}}}}},
+			expectSet:   NewSet("foo.d/foo.py"),
+		},
+		{
+			name:        "Match material foo.d/foo.py with foo.d\\foo.py",
+			rule:        map[string]string{"pattern": "*", "dstName": "foo", "dstType": "materials", "srcPrefix": "foo.d"},
+			srcArtifact: map[string]interface{}{"foo.d\\foo.py": map[string]interface{}{"sha265": "abc"}},
+			item:        map[string]Metadata{"foo": &Metablock{Signed: Link{Name: "foo", Materials: map[string]interface{}{"foo.d\\foo.py": map[string]interface{}{"sha265": "abc"}}}}},
+			expectSet:   NewSet("foo.d/foo.py"),
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			queue := NewSet(InterfaceKeyStrings(tt.srcArtifact)...)
+			result := verifyMatchRule(tt.rule, tt.srcArtifact, queue, tt.item)
+			if !reflect.DeepEqual(result, tt.expectSet) {
+				t.Errorf("verifyMatchRule returned '%s', expected '%s'", result, tt.expectSet)
+			}
+		})
+	}
+}
+
 func TestReduceStepsMetadata(t *testing.T) {
 	mb, err := LoadMetadata("demo.layout")
 	if err != nil {
