@@ -581,6 +581,44 @@ func TestVerifyArtifact(t *testing.T) {
 	}
 }
 
+func TestVerifyArtifactWindows(t *testing.T) {
+	if !testOSisWindows() {
+		t.Skip("Skipping Windows test on non-Windows OS")
+	}
+
+	var testCases = []struct {
+		name      string
+		item      []interface{}
+		metadata  map[string]Metadata
+		expectErr string
+	}{
+		{
+			name:      "Consuming subdirectory material in inspection",
+			item:      []interface{}{Inspection{SupplyChainItem: SupplyChainItem{Name: "foo", ExpectedProducts: [][]string{{"ALLOW", "dir/*"}, {"DISALLOW", "*"}}}}},
+			metadata:  map[string]Metadata{"foo": &Metablock{Signed: Link{Name: "foo", Products: map[string]interface{}{"dir\\foo.py": map[string]interface{}{"sha265": "abc"}}}}},
+			expectErr: "",
+		},
+		{
+			name:      "Consuming subdirectory product in inspection",
+			item:      []interface{}{Inspection{SupplyChainItem: SupplyChainItem{Name: "foo", ExpectedMaterials: [][]string{{"ALLOW", "dir/*"}, {"DISALLOW", "*"}}}}},
+			metadata:  map[string]Metadata{"foo": &Metablock{Signed: Link{Name: "foo", Materials: map[string]interface{}{"dir\\foo.py": map[string]interface{}{"sha265": "abc"}}}}},
+			expectErr: "",
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			err := VerifyArtifacts(tt.item, tt.metadata)
+			if (err == nil && tt.expectErr != "") ||
+				(err != nil && tt.expectErr == "") ||
+				(err != nil && !strings.Contains(err.Error(), tt.expectErr)) {
+				t.Errorf("VerifyArtifacts returned '%s', expected '%s' error",
+					err, tt.expectErr)
+			}
+		})
+	}
+}
+
 func TestVerifyMatchRule(t *testing.T) {
 	var testCases = []struct {
 		name        string

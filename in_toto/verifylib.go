@@ -224,11 +224,11 @@ func VerifyArtifacts(items []interface{},
 		// sets for convenience in further processing
 		materialPaths := NewSet()
 		for _, p := range InterfaceKeyStrings(materials) {
-			materialPaths.Add(path.Clean(p))
+			materialPaths.Add(filepath.ToSlash(path.Clean(p)))
 		}
 		productPaths := NewSet()
 		for _, p := range InterfaceKeyStrings(products) {
-			productPaths.Add(path.Clean(p))
+			productPaths.Add(filepath.ToSlash(path.Clean(p)))
 		}
 
 		// For `create`, `delete` and `modify` rules we prepare sets of artifacts
