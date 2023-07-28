@@ -199,6 +199,9 @@ func recordArtifacts(paths []string, hashAlgorithms []string, gitignorePatterns 
 					return err
 				}
 
+				// Convert windows filepath to unix filepath.
+				path = filepath.ToSlash(path)
+
 				for _, strip := range lStripPaths {
 					if strings.HasPrefix(path, strip) {
 						path = strings.TrimPrefix(path, strip)
